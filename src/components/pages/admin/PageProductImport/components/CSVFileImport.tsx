@@ -2,6 +2,8 @@ import React from 'react';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import axios from 'axios';
+// Buffer from Node.js is not available by default in the browser
+import { Buffer as BufferPolyfill } from 'buffer';
 
 type CSVFileImportProps = {
   url: string;
@@ -10,6 +12,20 @@ type CSVFileImportProps = {
 
 export default function CSVFileImport({ url, title }: CSVFileImportProps) {
   const [file, setFile] = React.useState<File | null>();
+
+  // place token into localStorage on component onMount and remove it on component destroy
+  React.useEffect(() => {
+    const userLogin = import.meta.env.VITE_AUTH_LOGIN;
+    const userPassword = import.meta.env.VITE_AUTH_PASSWORD;
+    const token = `${userLogin}:${userPassword}`;
+    const encodedToken = BufferPolyfill.from(token, 'utf-8').toString('base64');
+
+    localStorage.setItem('authorization_token', encodedToken);
+
+    return () => {
+      localStorage.removeItem('authorization_token');
+    };
+  }, []);
 
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -38,7 +54,11 @@ export default function CSVFileImport({ url, title }: CSVFileImportProps) {
       params: {
         name: encodeURIComponent(file.name),
       },
+      headers: {
+        Authorization: `Basic ${localStorage.getItem('authorization_token')}`,
+      },
     });
+
     console.log('File to upload: ', file.name);
     console.log('Uploading to: ', response.data);
     const result = await fetch(response.data, {
