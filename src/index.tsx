@@ -1,12 +1,13 @@
-import React from "react";
-import { createRoot } from "react-dom/client";
-import App from "~/components/App/App";
-import CssBaseline from "@mui/material/CssBaseline";
-import { ThemeProvider } from "@mui/material/styles";
-import { BrowserRouter } from "react-router-dom";
-import { QueryClient, QueryClientProvider } from "react-query";
-import { ReactQueryDevtools } from "react-query/devtools";
-import { theme } from "~/theme";
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import App from '~/components/App/App';
+import CssBaseline from '@mui/material/CssBaseline';
+import { ThemeProvider } from '@mui/material/styles';
+import { BrowserRouter } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from 'react-query';
+import { ReactQueryDevtools } from 'react-query/devtools';
+import { theme } from '~/theme';
+import axios from 'axios';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -14,12 +15,31 @@ const queryClient = new QueryClient({
   },
 });
 
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status = error.response?.status;
+
+    if (status === 401) {
+      alert('Unauthorized request. Please check your credentials!');
+    }
+
+    if (status === 403) {
+      alert(
+        'Access forbidden. You do not have permission to perform this action!',
+      );
+    }
+
+    return Promise.reject(error);
+  },
+);
+
 if (import.meta.env.DEV) {
-  const { worker } = await import("./mocks/browser");
-  worker.start({ onUnhandledRequest: "bypass" });
+  const { worker } = await import('./mocks/browser');
+  worker.start({ onUnhandledRequest: 'bypass' });
 }
 
-const container = document.getElementById("app");
+const container = document.getElementById('app');
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const root = createRoot(container!);
 root.render(
@@ -33,5 +53,5 @@ root.render(
         <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>
     </BrowserRouter>
-  </React.StrictMode>
+  </React.StrictMode>,
 );
