@@ -21,6 +21,15 @@ export class InfraStack extends cdk.Stack {
       autoDeleteObjects: true,
     });
 
+    // the solution to exclude mixed content problem in browser
+    // (cart-api created without load balancer in aws elastic beanstalk and it processes http requests)
+    const ebOrigin = new origins.HttpOrigin(
+      'nebiros88-cart-api-develop.eu-central-1.elasticbeanstalk.com',
+      {
+        protocolPolicy: cloudfront.OriginProtocolPolicy.HTTP_ONLY,
+      },
+    );
+
     // Cloudfront distribution config
     const distribution = new cloudfront.Distribution(
       this,
@@ -31,6 +40,17 @@ export class InfraStack extends cdk.Stack {
           origin: origins.S3BucketOrigin.withOriginAccessControl(bucket),
           viewerProtocolPolicy:
             cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        },
+        additionalBehaviors: {
+          '/api/*': {
+            origin: ebOrigin,
+            viewerProtocolPolicy:
+              cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+            allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
+            cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
+            cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
+            originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER,
+          },
         },
       },
     );

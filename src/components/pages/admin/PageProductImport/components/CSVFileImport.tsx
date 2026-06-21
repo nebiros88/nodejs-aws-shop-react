@@ -14,18 +14,18 @@ export default function CSVFileImport({ url, title }: CSVFileImportProps) {
   const [file, setFile] = React.useState<File | null>();
 
   // place token into localStorage on component onMount and remove it on component destroy
-  React.useEffect(() => {
-    const userLogin = import.meta.env.VITE_AUTH_LOGIN;
-    const userPassword = import.meta.env.VITE_AUTH_PASSWORD;
-    const token = `${userLogin}:${userPassword}`;
-    const encodedToken = BufferPolyfill.from(token, 'utf-8').toString('base64');
+  // React.useEffect(() => {
+  //   const userLogin = import.meta.env.VITE_AUTH_LOGIN;
+  //   const userPassword = import.meta.env.VITE_AUTH_PASSWORD;
+  //   const token = `${userLogin}:${userPassword}`;
+  //   const encodedToken = BufferPolyfill.from(token, 'utf-8').toString('base64');
 
-    localStorage.setItem('authorization_token', encodedToken);
+  //   localStorage.setItem('authorization_token', encodedToken);
 
-    return () => {
-      localStorage.removeItem('authorization_token');
-    };
-  }, []);
+  //   return () => {
+  //     localStorage.removeItem('authorization_token');
+  //   };
+  // }, []);
 
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
